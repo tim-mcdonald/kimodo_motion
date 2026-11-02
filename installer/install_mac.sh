@@ -58,7 +58,7 @@ log() {  # log LEVEL msg...
         *)     echo "$line" ;;
     esac
 }
-die() { log ERROR "$*"; echo; read -r -p "安装失败，按回车关闭…" _ || true; exit 1; }
+die() { log ERROR "$*"; echo; read -r -p "Install failed, press Enter to close..." _ || true; exit 1; }
 
 log STEP "========== Kimodo Runtime Installer (macOS) =========="
 log INFO "Runtime dir: $RUNTIME_DIR"
@@ -214,4 +214,4 @@ log STEP "  2. First generation downloads ~16GB LLaMA-3-8B text encoder (gated):
 log STEP "       $VPY -m huggingface_hub.commands.huggingface_cli login"
 log STEP "  3. Text encoder + diffusion run on Metal (MPS) automatically; override with KIMODO_DEVICE."
 echo
-read -r -p "完成，按回车关闭…" _ || true
+read -r -p "Done, press Enter to close..." _ || true

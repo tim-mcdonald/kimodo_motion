@@ -31,7 +31,7 @@ TRANSLATE_PROVIDERS = [
         "qwen-turbo",
     ),
     ("openai", "OpenAI", "https://api.openai.com/v1", "gpt-4o-mini"),
-    ("custom", "自定义", "", ""),
+    ("custom", "Custom", "", ""),
 ]
 
 
@@ -59,13 +59,13 @@ def _get_fetched_models_items(self, context):
     """EnumProperty items callback — parses cache string into dropdown items."""
     cache = self.translate_model_cache or ""
     if not cache:
-        return [("", "(未拉取)", "先点 Fetch 拉取模型列表")]
+        return ["", "(none fetched)", "Click Fetch to pull the model list"]
     items = []
     for i, m in enumerate(cache.split("|")):
         m = m.strip()
         if m:
             items.append((m, m, ""))
-    return items or [("", "(空)", "API 未返回任何模型")]
+    return items or [("", "(empty)", "The API returned no models")]
 
 
 def _on_model_pick(self, context):
@@ -111,32 +111,32 @@ def _sync_from_frames(self, context):
 
 
 class KimodoConstraintItem(PropertyGroup):
-    label: StringProperty(name="名称", default="")
+    label: StringProperty(name="Name", default="")
     constraint_type: EnumProperty(
-        name="类型",
+        name="Type",
         items=[
-            ("root2d", "Root XZ", "约束角色根节点在地面的路径/路点"),
-            ("fullbody", "Full Body", "SOMA proxy 全身姿态约束"),
-            ("left_hand", "L Hand", "左手目标"),
-            ("right_hand", "R Hand", "右手目标"),
-            ("left_foot", "L Foot", "左脚目标"),
-            ("right_foot", "R Foot", "右脚目标"),
+            ("root2d", "Root XZ", "Root path or waypoints on the ground"),
+            ("fullbody", "Full Body", "Full-body pose constraint via the SOMA proxy"),
+            ("left_hand", "L Hand", "Left hand target"),
+            ("right_hand", "R Hand", "Right hand target"),
+            ("left_foot", "L Foot", "Left foot target"),
+            ("right_foot", "R Foot", "Right foot target"),
         ],
         default="root2d",
     )
-    frame: IntProperty(name="帧", default=1, min=0)
-    marker_object: PointerProperty(name="对象", type=bpy.types.Object)
-    enabled: BoolProperty(name="启用", default=True)
-    include_heading: BoolProperty(name="朝向", default=False)
-    heading_angle: FloatProperty(name="角度", default=0.0, subtype="ANGLE")
+    frame: IntProperty(name="Frame", default=1, min=0)
+    marker_object: PointerProperty(name="Object", type=bpy.types.Object)
+    enabled: BoolProperty(name="Enabled", default=True)
+    include_heading: BoolProperty(name="Heading", default=False)
+    heading_angle: FloatProperty(name="Angle", default=0.0, subtype="ANGLE")
 
 
 class KimodoMotionSegment(PropertyGroup):
     prompt: StringProperty(name="Prompt", default="A person walks forward.")
-    start_frame: IntProperty(name="开始帧", default=1, min=0)
-    end_frame: IntProperty(name="结束帧", default=180, min=1)
-    enabled: BoolProperty(name="启用", default=True)
-    seed: IntProperty(name="种子", default=-1, min=-1)
+    start_frame: IntProperty(name="Start Frame", default=1, min=0)
+    end_frame: IntProperty(name="End Frame", default=180, min=1)
+    enabled: BoolProperty(name="Enabled", default=True)
+    seed: IntProperty(name="Seed", default=-1, min=-1)
 
 
 class KimodoPreferences(AddonPreferences):
@@ -146,108 +146,108 @@ class KimodoPreferences(AddonPreferences):
     bl_idname = __package__
 
     server_host: StringProperty(
-        name="服务器地址",
+        name="Server Host",
         default="127.0.0.1",
-        description="Kimodo 服务器地址（保持 localhost 确保安全）",
+        description="Kimodo server address (keep localhost for safety)",
     )
     server_port: IntProperty(
-        name="端口",
+        name="Port",
         default=8790,
         min=1024,
         max=65535,
-        description="Kimodo 服务器端口",
+        description="Kimodo server port",
     )
     venv_path: StringProperty(
-        name="虚拟环境路径",
+        name="Virtual Env Path",
         default=default_venv_path(),
         subtype="DIR_PATH",
-        description="Kimodo Python 虚拟环境路径",
+        description="Path to the Kimodo Python virtual environment",
     )
     auto_start_server: BoolProperty(
-        name="自动启动服务器",
+        name="Auto-Start Server",
         default=True,
-        description="生成时自动启动 Kimodo 服务器",
+        description="Start the Kimodo server automatically when generating",
     )
     model_name: EnumProperty(
-        name="模型",
+        name="Model",
         items=[
             (
                 "Kimodo-SOMA-RP-v1.2",
-                "SOMA RP v1.2 (官方默认)",
-                "修正训练/测试划分后重训（v1.1 有 BONES-SEED 泄漏）",
+                "SOMA RP v1.2 (default)",
+                "Retrained after fixing the train/test split (v1.1 leaked BONES-SEED test data)",
             ),
             (
                 "Kimodo-SOMA-RP-v1",
-                "SOMA RP v1 (完整 700h)",
-                "最高质量，完整 Rigplay 数据集",
+                "SOMA RP v1 (full 700h)",
+                "Highest quality, full Rigplay dataset",
             ),
-            ("Kimodo-SOMA-RP-v1.1", "SOMA RP v1.1", "有 BONES-SEED 测试泄漏，不推荐使用"),
-            ("Kimodo-SOMA-SEED-v1", "SOMA SEED (288h)", "公开数据集"),
+            ("Kimodo-SOMA-RP-v1.1", "SOMA RP v1.1", "Leaked BONES-SEED test data, not recommended"),
+            ("Kimodo-SOMA-SEED-v1", "SOMA SEED (288h)", "Public dataset"),
         ],
         default="Kimodo-SOMA-RP-v1.2",
-        description="Kimodo 模型变体",
+        description="Kimodo model variant",
     )
     fbx_retarget_timeout: IntProperty(
-        name="重定向超时（秒）",
+        name="Retarget Timeout (s)",
         default=60,
         min=10,
         max=600,
-        description="FBX 重定向 subprocess 超时（每个 sample）",
+        description="FBX retarget subprocess timeout (per sample)",
     )
     keep_retarget_temp: BoolProperty(
-        name="保留临时文件",
+        name="Keep Temp Files",
         default=False,
-        description="调试用：保留临时 FBX 和映射文件（否则生成后删除）",
+        description="Debug: keep the temporary FBX and mapping files (otherwise deleted after generation)",
     )
 
     # ── 中文翻译（生成时自动 zh→en）──
     translate_mode: EnumProperty(
-        name="中文翻译",
+        name="Chinese Translation",
         items=[
-            ("OFF", "关闭", "prompt 原样提交（Kimodo 英文效果最佳）"),
+            ("OFF", "Off", "Submit the prompt as-is (Kimodo works best with English)"),
             (
                 "DICT",
-                "仅词典（瞬时）",
-                "内置 ~60 条常见动作词典，命中瞬时匹配，无 API 依赖",
+                "Dict Only (instant)",
+                "Built-in dictionary of ~60 common actions; instant match, no API needed",
             ),
             (
                 "API",
-                "词典 + AI（推荐）",
-                "词典优先，未命中走 OpenAI 兼容 API（DeepSeek 等）",
+                "Dict + AI (recommended)",
+                "Dict first; misses go to an OpenAI-compatible API (DeepSeek, etc.)",
             ),
         ],
         default="DICT",
-        description="如何处理中文 prompt",
+        description="How Chinese prompts are handled",
     )
     translate_provider: EnumProperty(
-        name="API 预设",
+        name="API Preset",
         items=[
             ("deepseek", "DeepSeek", "https://api.deepseek.com/v1"),
             ("openrouter", "OpenRouter", "https://openrouter.ai/api/v1"),
             ("moonshot", "Moonshot (Kimi)", "https://api.moonshot.cn/v1"),
             ("qwen", "Qwen (DashScope)", "https://dashscope.aliyuncs.com"),
             ("openai", "OpenAI", "https://api.openai.com/v1"),
-            ("custom", "自定义", "手动填写 Base URL"),
+            ("custom", "Custom", "Fill in the Base URL manually"),
         ],
         default="deepseek",
-        description="选择后自动填入 Base URL 和推荐模型（可 Fetch 拉取完整列表）",
+        description="Auto-fills the Base URL and a suggested model (Fetch pulls the full list)",
         update=lambda self, ctx: _apply_provider_preset(self),
     )
     translate_api_url: StringProperty(
         name="API Base URL",
         default="https://api.deepseek.com/v1",
-        description="OpenAI 兼容的 API 基础地址",
+        description="Base URL of an OpenAI-compatible API",
     )
     translate_api_key: StringProperty(
         name="API Key",
         default="",
         subtype="PASSWORD",
-        description="从对应服务商控制台获取",
+        description="Get it from the provider's console",
     )
     translate_model: StringProperty(
-        name="模型",
+        name="Model",
         default="deepseek-chat",
-        description="模型名；点 Fetch 从 API 拉取可用列表",
+        description="Model name; click Fetch to pull the available list from the API",
     )
     translate_model_cache: StringProperty(
         name="_cache",
@@ -256,13 +256,13 @@ class KimodoPreferences(AddonPreferences):
         description="Fetched model list cache (| separated)",
     )
     translate_model_pick: EnumProperty(
-        name="选择模型",
+        name="Pick Model",
         items=_get_fetched_models_items,
-        description="从 API 返回的模型列表里选",
+        description="Pick from the model list returned by the API",
         update=lambda self, ctx: _on_model_pick(self, ctx),
     )
     translate_timeout: IntProperty(
-        name="API 超时 (秒)",
+        name="API Timeout (s)",
         default=15,
         min=3,
         max=120,
@@ -278,7 +278,7 @@ class KimodoPreferences(AddonPreferences):
         layout = self.layout
 
         box = layout.box()
-        box.label(text="服务器设置", icon="WORLD")
+        box.label(text="Server", icon="WORLD")
         row = box.row()
         row.prop(self, "server_host")
         row.prop(self, "server_port")
@@ -286,16 +286,16 @@ class KimodoPreferences(AddonPreferences):
         box.prop(self, "venv_path")
 
         box = layout.box()
-        box.label(text="生成设置", icon="ARMATURE_DATA")
+        box.label(text="Generation", icon="ARMATURE_DATA")
         box.prop(self, "model_name")
 
         box = layout.box()
-        box.label(text="重定向设置", icon="CON_ARMATURE")
+        box.label(text="Retargeting", icon="CON_ARMATURE")
         box.prop(self, "fbx_retarget_timeout")
         box.prop(self, "keep_retarget_temp")
 
         box = layout.box()
-        box.label(text="中文翻译", icon="OUTLINER_DATA_FONT")
+        box.label(text="Chinese Translation", icon="OUTLINER_DATA_FONT")
         box.prop(self, "translate_mode")
         if self.translate_mode == "API":
             row = box.row()
@@ -310,20 +310,20 @@ class KimodoPreferences(AddonPreferences):
             )
             # Fetched-models picker (只在有缓存时显示)
             if self.translate_model_cache:
-                sub.prop(self, "translate_model_pick", text="从列表选")
+                sub.prop(self, "translate_model_pick", text="From List")
             row = box.row(align=True)
             row.operator("kimodo.translate_test", icon="CHECKMARK")
             row.prop(self, "translate_timeout")
             if self.translate_status:
                 box.label(text=self.translate_status, icon="INFO")
             box.label(
-                text="填完 API Key 后请点右下角菜单 > Save Preferences (重启不丢)",
+                text="After filling in the API key, use the menu > Save Preferences (so it survives restarts)",
                 icon="FILE_TICK",
             )
 
         box = layout.box()
-        box.label(text="状态", icon="INFO")
-        box.label(text=f"服务器: http://{self.server_host}:{self.server_port}")
+        box.label(text="Status", icon="INFO")
+        box.label(text=f"Server: http://{self.server_host}:{self.server_port}")
 
 
 def get_prefs() -> KimodoPreferences:
@@ -340,100 +340,100 @@ def get_server_url() -> str:
 
 def register_props():
     bpy.types.Scene.kimodo_retarget_preset = EnumProperty(
-        name="骨骼映射",
+        name="Bone Mapping",
         items=[
-            ("AUTO", "自动匹配", "按名称自动匹配（不区分大小写）"),
-            ("vroid", "VRoid", "VRoid Studio / VRM 模型"),
-            ("mmd", "MMD", "MikuMikuDance 模型"),
-            ("mixamo", "Mixamo", "Mixamo 骨架模型"),
+            ("AUTO", "Auto Match", "Match by bone name (case-insensitive)"),
+            ("vroid", "VRoid", "VRoid Studio / VRM models"),
+            ("mmd", "MMD", "MikuMikuDance models"),
+            ("mixamo", "Mixamo", "Mixamo rig models"),
         ],
         default="AUTO",
-        description="重定向骨骼映射预设",
+        description="Retarget bone mapping preset",
     )
     bpy.types.Scene.kimodo_prompt = StringProperty(
-        name="提示词",
+        name="Prompt",
         default="A person walks forward.",
-        description="描述要生成的动作（英文效果更好）",
+        description="Describe the motion to generate (English works best)",
     )
     # Kimodo 官方约束：fps=30 固定, duration ∈ [2.0, 10.0]s, 即 num_frames ∈ [59, 299]
     bpy.types.Scene.kimodo_length_mode = EnumProperty(
-        name="时长输入",
+        name="Length Input",
         items=[
-            ("DURATION", "按秒", "按秒输入（自动换算帧数 = 秒 × 30 − 1）"),
-            ("FRAMES", "按帧数", "直接输入帧数（自动换算秒 = 帧数 ÷ 30）"),
+            ("DURATION", "Seconds", "Enter seconds (frames = seconds * 30 - 1)"),
+            ("FRAMES", "Frames", "Enter frames directly (seconds = frames / 30)"),
         ],
         default="DURATION",
-        description="用秒还是帧数控制动画长度",
+        description="Control the animation length in seconds or frames",
     )
     bpy.types.Scene.kimodo_duration = bpy.props.FloatProperty(
-        name="时长(秒)",
+        name="Duration (s)",
         default=6.0,
         min=2.0,
         max=10.0,
         step=10,
         precision=2,
-        description="动画时长（Kimodo 官方范围 2-10 秒，默认 6s）",
+        description="Animation duration (Kimodo official range 2-10s, default 6s)",
         update=_sync_from_duration,
     )
     bpy.types.Scene.kimodo_num_frames = IntProperty(
-        name="帧数",
+        name="Frames",
         default=179,  # 6.0s × 30 − 1
         min=59,  # 2.0s × 30 − 1
         max=299,  # 10.0s × 30 − 1
-        description="总帧数（Kimodo 官方 59-299，默认 179 = 约 6s @ 30fps）",
+        description="Total frames (Kimodo official 59-299, default 179 = ~6s @ 30fps)",
         update=_sync_from_frames,
     )
     bpy.types.Scene.kimodo_num_samples = IntProperty(
-        name="变体数",
+        name="Variants",
         default=1,
         min=1,
         max=8,
-        description="生成多个不同的动作变体",
+        description="Generate several different motion variants",
     )
     bpy.types.Scene.kimodo_seed = IntProperty(
-        name="种子",
+        name="Seed",
         default=-1,
         min=-1,
-        description="随机种子（-1 = 随机）",
+        description="Random seed (-1 = random)",
     )
     bpy.types.Scene.kimodo_diffusion_steps = IntProperty(
-        name="扩散步数",
+        name="Diffusion Steps",
         default=100,
         min=10,
         max=200,
-        description="去噪步数（越高质量越好，速度越慢）",
+        description="Denoising steps (more = better quality, slower)",
     )
     bpy.types.Scene.kimodo_action_start_frame = IntProperty(
-        name="起始帧",
+        name="Start Frame",
         default=0,
         min=0,
-        description="生成 Action 写入的起始帧；约束/曲线会以此作为 Kimodo 第 0 帧",
+        description="Frame where the generated Action is written; constraints/curves use this as Kimodo frame 0",
     )
     bpy.types.Scene.kimodo_enable_constraints = BoolProperty(
-        name="启用约束",
+        name="Enable Constraints",
         default=False,
-        description="将曲线路径/标记点作为 Kimodo 官方约束发送",
+        description="Send the path curve / markers as Kimodo official constraints",
     )
     bpy.types.Scene.kimodo_motion_constraints = CollectionProperty(
         type=KimodoConstraintItem
     )
     bpy.types.Scene.kimodo_constraint_index = IntProperty(
-        name="约束索引",
+        name="Constraint Index",
         default=0,
         min=0,
     )
     bpy.types.Scene.kimodo_auto_canonicalize = BoolProperty(
-        name="自动规范原点",
+        name="Auto Canonical Origin",
         default=True,
-        description="将最早的 root/fullbody 约束点作为 Kimodo XZ 原点",
+        description="Use the earliest root/fullbody constraint point as the Kimodo XZ origin",
     )
     bpy.types.Scene.kimodo_post_processing = BoolProperty(
-        name="官方后处理",
+        name="Official Post-Processing",
         default=False,
         description=(
-            "尝试启用 Kimodo motion_correction 官方后处理；macOS/Apple Silicon 默认不安装该原生扩展，服务端会自动跳过"
+            "Try to enable Kimodo motion_correction post-processing; the native extension is not installed by default on macOS/Apple Silicon, and the server skips it"
             if sys.platform == "darwin"
-            else "尝试启用 Kimodo motion_correction 官方后处理以减少约束偏差/脚滑"
+            else "Try to enable Kimodo motion_correction post-processing to reduce constraint drift / foot sliding"
         ),
     )
     bpy.types.Scene.kimodo_text_cfg = FloatProperty(
@@ -441,14 +441,14 @@ def register_props():
         default=2.0,
         min=0.0,
         max=20.0,
-        description="文字提示引导强度",
+        description="Text prompt guidance strength",
     )
     bpy.types.Scene.kimodo_constraint_cfg = FloatProperty(
         name="Constraint CFG",
         default=2.0,
         min=0.0,
         max=20.0,
-        description="约束引导强度",
+        description="Constraint guidance strength",
     )
     bpy.types.Scene.kimodo_root_margin = FloatProperty(
         name="Root Margin",
@@ -456,50 +456,50 @@ def register_props():
         min=0.0,
         max=1.0,
         precision=3,
-        description="Kimodo motion_correction 官方后处理的 root 容差（米）；后处理关闭或不可用时不生效",
+        description="Root tolerance (meters) for motion_correction post-processing; no effect when post-processing is off or unavailable",
     )
     bpy.types.Scene.kimodo_num_transition_frames = IntProperty(
-        name="过渡帧",
+        name="Transition Frames",
         default=5,
         min=1,
         max=30,
-        description="多段 prompt 之间的过渡帧数",
+        description="Transition frames between multi-prompt segments",
     )
     bpy.types.Scene.kimodo_path_curve = PointerProperty(
-        name="路径曲线",
+        name="Path Curve",
         type=bpy.types.Object,
         poll=lambda self, obj: obj.type == "CURVE",
     )
     bpy.types.Scene.kimodo_path_waypoints = IntProperty(
-        name="路点数",
+        name="Waypoints",
         default=8,
         min=2,
         max=30,
-        description="沿曲线按弧长采样为 root2d 约束的路点数",
+        description="Arc-length samples along the curve, used as root2d constraints",
     )
     bpy.types.Scene.kimodo_path_start_frame = IntProperty(
-        name="路径开始",
+        name="Path Start",
         default=0,
         min=0,
     )
     bpy.types.Scene.kimodo_path_end_frame = IntProperty(
-        name="路径结束",
+        name="Path End",
         default=179,
         min=1,
     )
     bpy.types.Scene.kimodo_constraint_json_preview = StringProperty(
-        name="约束 JSON",
+        name="Constraint JSON",
         default="",
         options={"HIDDEN"},
     )
     bpy.types.Scene.kimodo_motion_segments = CollectionProperty(
         type=KimodoMotionSegment
     )
-    bpy.types.Scene.kimodo_segment_index = IntProperty(name="分段索引", default=0, min=0)
+    bpy.types.Scene.kimodo_segment_index = IntProperty(name="Segment Index", default=0, min=0)
     bpy.types.Scene.kimodo_translation_note = StringProperty(
         name="_translation_note",
         default="",
-        description="上次生成时的翻译结果/状态（只读显示）",
+        description="Translation result/status from the last generation (read-only display)",
     )
 
 

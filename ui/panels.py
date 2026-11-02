@@ -97,7 +97,7 @@ def _detect_preset(arm_obj) -> str:
 
 
 class KIMODO_PT_main(Panel):
-    bl_label = "Kimodo 动作生成"
+    bl_label = "Kimodo Motion Generation"
     bl_idname = "KIMODO_PT_main"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -116,63 +116,63 @@ class KIMODO_PT_main(Panel):
         box = layout.box()
         row = box.row()
         if server_alive:
-            row.label(text="服务器: 在线", icon="CHECKMARK")
+            row.label(text="Server: online", icon="CHECKMARK")
             row.operator("kimodo.stop_server", text="", icon="CANCEL")
             # ── Model load/unload toggle (manual, below the online row) ──
             trow = box.row()
             if GEN_PROGRESS.get("running") and GEN_PROGRESS.get("phase") == "loading":
                 trow.enabled = False
-                trow.label(text="模型加载中…", icon="SORTTIME")
+                trow.label(text="Loading model...", icon="SORTTIME")
             elif status.get("model_loaded"):
-                trow.operator("kimodo.unload_model", text="卸载模型", icon="TRASH")
+                trow.operator("kimodo.unload_model", text="Unload Model", icon="TRASH")
             else:
-                trow.operator("kimodo.load_model", text="加载模型进内存", icon="IMPORT")
+                trow.operator("kimodo.load_model", text="Load Model to Memory", icon="IMPORT")
         else:
-            row.label(text="服务器: 离线", icon="ERROR")
+            row.label(text="Server: offline", icon="ERROR")
             row.operator("kimodo.start_server", text="", icon="PLAY")
 
         # ── Target armature status ──
         box = layout.box()
-        box.label(text="目标角色", icon="ARMATURE_DATA")
+        box.label(text="Target Character", icon="ARMATURE_DATA")
         target = context.active_object
         if target is None or target.type != "ARMATURE":
-            box.label(text="请选中一个骨架 (Armature)", icon="ERROR")
+            box.label(text="Select an armature", icon="ERROR")
         elif len(target.data.bones) < 15:
             box.label(
-                text=f"骨架骨骼过少 ({len(target.data.bones)}): 非人形 rig?",
+                text=f"Few bones ({len(target.data.bones)}): not a humanoid rig?",
                 icon="ERROR",
             )
         else:
             preset = _detect_preset(target)
             row = box.row()
             row.label(text=f"{target.name}", icon="OUTLINER_OB_ARMATURE")
-            row.label(text=f"{len(target.data.bones)} 骨骼")
+            row.label(text=f"{len(target.data.bones)} bones")
             if preset == "unknown":
-                box.label(text="骨骼命名未识别，需手动选预设", icon="QUESTION")
+                box.label(text="Bone naming not recognized, select a preset manually", icon="QUESTION")
             else:
-                box.label(text=f"自动识别: {preset}", icon="CHECKMARK")
-            box.prop(scene, "kimodo_retarget_preset", text="映射预设")
+                box.label(text=f"Auto-detected: {preset}", icon="CHECKMARK")
+            box.prop(scene, "kimodo_retarget_preset", text="Mapping Preset")
 
         # ── Generation parameters ──
         box = layout.box()
-        box.label(text="生成参数", icon="MOD_WAVE")
+        box.label(text="Generation", icon="MOD_WAVE")
         box.prop(scene, "kimodo_prompt", text="")
         # 翻译模式指示 + 上次翻译结果
         prefs = get_prefs()
         note = getattr(scene, "kimodo_translation_note", "") or ""
         if prefs.translate_mode != "OFF":
             mode_label = {
-                "DICT": "词典",
+                "DICT": "Dict",
                 "API": f"AI ({prefs.translate_provider})",
             }.get(prefs.translate_mode, prefs.translate_mode)
-            box.label(text=f"中文翻译: {mode_label}", icon="OUTLINER_DATA_FONT")
+            box.label(text=f"Chinese Translation: {mode_label}", icon="OUTLINER_DATA_FONT")
         if note:
             icon = "ERROR" if note.startswith("warning") else "CHECKMARK"
             box.label(text=note, icon=icon)
         # 时长（Kimodo 官方 2-10s @ 30fps；帧数后台自动算）
         row = box.row(align=True)
         row.prop(scene, "kimodo_duration")
-        row.label(text=f"({scene.kimodo_num_frames} 帧)")
+        row.label(text=f"({scene.kimodo_num_frames} frames)")
         row = box.row(align=True)
         row.prop(scene, "kimodo_num_samples")
         row.prop(scene, "kimodo_diffusion_steps")
@@ -188,14 +188,14 @@ class KIMODO_PT_main(Panel):
             if phase in ("starting", "loading") or total <= 0:
                 # Model load / pre-sampling / retarget: no step count to show yet.
                 label = {
-                    "starting": "正在启动…",
-                    "loading": "加载模型到设备…",
-                    "retarget": "重定向到骨架…",
-                }.get(phase, "生成中…")
+                    "starting": "Starting...",
+                    "loading": "Loading model to device...",
+                    "retarget": "Retargeting to armature...",
+                }.get(phase, "Generating...")
                 col.progress(factor=0.0, text=label, type="BAR")
             else:
                 frac = max(0.0, min(1.0, step / total))
-                col.progress(factor=frac, text=f"扩散 {step}/{total}", type="BAR")
+                col.progress(factor=frac, text=f"Diffusion {step}/{total}", type="BAR")
         else:
             sub = layout.column()
             sub.scale_y = 1.5
@@ -208,7 +208,7 @@ class KIMODO_PT_main(Panel):
 
 
 class KIMODO_PT_actions(Panel):
-    bl_label = "已生成的 Action"
+    bl_label = "Generated Actions"
     bl_idname = "KIMODO_PT_actions"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -226,7 +226,7 @@ class KIMODO_PT_actions(Panel):
 
         kimodo_actions = [a for a in bpy.data.actions if a.name.startswith("Kimodo_")]
         if not kimodo_actions:
-            layout.label(text="还没有生成过 Action", icon="INFO")
+            layout.label(text="No Actions generated yet", icon="INFO")
             return
 
         active_action = (
@@ -256,7 +256,7 @@ class KIMODO_PT_actions(Panel):
 
 
 class KIMODO_PT_constraints(Panel):
-    bl_label = "路径与官方约束"
+    bl_label = "Path & Official Constraints"
     bl_idname = "KIMODO_PT_constraints"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -272,7 +272,7 @@ class KIMODO_PT_constraints(Panel):
         box.prop(scene, "kimodo_enable_constraints")
         row = box.row(align=True)
         row.prop(scene, "kimodo_action_start_frame")
-        row.prop(scene, "kimodo_auto_canonicalize", text="规范原点")
+        row.prop(scene, "kimodo_auto_canonicalize", text="Canonical Origin")
         row = box.row(align=True)
         row.prop(scene, "kimodo_post_processing")
         row.prop(scene, "kimodo_root_margin")
@@ -281,7 +281,7 @@ class KIMODO_PT_constraints(Panel):
         row.prop(scene, "kimodo_constraint_cfg")
 
         box = layout.box()
-        box.label(text="曲线路径", icon="CURVE_BEZCURVE")
+        box.label(text="Path Curve", icon="CURVE_BEZCURVE")
         box.prop(scene, "kimodo_path_curve")
         row = box.row(align=True)
         row.prop(scene, "kimodo_path_waypoints")
@@ -291,7 +291,7 @@ class KIMODO_PT_constraints(Panel):
 
         box = layout.box()
         row = box.row(align=True)
-        row.label(text=f"约束标记 ({len(scene.kimodo_motion_constraints)})", icon="EMPTY_ARROWS")
+        row.label(text=f"Constraint Markers ({len(scene.kimodo_motion_constraints)})", icon="EMPTY_ARROWS")
         row.operator("kimodo.preview_constraints_json", text="", icon="TEXT")
         row.operator("kimodo.clear_constraints", text="", icon="TRASH")
         quick = box.row(align=True)
@@ -317,7 +317,7 @@ class KIMODO_PT_constraints(Panel):
 
 
 class KIMODO_PT_segments(Panel):
-    bl_label = "多段动作"
+    bl_label = "Multi-Prompt Segments"
     bl_idname = "KIMODO_PT_segments"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"

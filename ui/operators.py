@@ -62,29 +62,29 @@ def _watch_thread_until_done(get_thread) -> None:
 
 class KIMODO_OT_start_server(Operator):
     bl_idname = "kimodo.start_server"
-    bl_label = "启动服务器"
-    bl_description = "启动 Kimodo 推理服务器"
+    bl_label = "Start Server"
+    bl_description = "Start the Kimodo inference server"
 
     def execute(self, context):
         prefs = get_prefs()
         try:
             manager.start_server(prefs.venv_path, prefs.server_host, prefs.server_port)
-            self.report({"INFO"}, "Kimodo 服务器已启动")
+            self.report({"INFO"}, "Kimodo server started")
         except FileNotFoundError as e:
             self.report({"ERROR"}, str(e))
         except Exception as e:
-            self.report({"ERROR"}, f"启动失败: {e}")
+            self.report({"ERROR"}, f"Failed to start: {e}")
         return {"FINISHED"}
 
 
 class KIMODO_OT_stop_server(Operator):
     bl_idname = "kimodo.stop_server"
-    bl_label = "停止服务器"
-    bl_description = "停止 Kimodo 推理服务器"
+    bl_label = "Stop Server"
+    bl_description = "Stop the Kimodo inference server"
 
     def execute(self, context):
         manager.stop_server()
-        self.report({"INFO"}, "Kimodo 服务器已停止")
+        self.report({"INFO"}, "Kimodo server stopped")
         return {"FINISHED"}
 
 
@@ -93,15 +93,15 @@ class KIMODO_OT_stop_server(Operator):
 
 class KIMODO_OT_translate_fetch_models(Operator):
     bl_idname = "kimodo.translate_fetch_models"
-    bl_label = "拉取模型列表"
-    bl_description = "从当前 API 地址拉取可用模型列表（/v1/models）"
+    bl_label = "Fetch Model List"
+    bl_description = "Fetch the list of available models from the current API address (/v1/models)"
 
     def execute(self, context):
         from ..translate import api_list_models
 
         prefs = get_prefs()
         if not prefs.translate_api_url or not prefs.translate_api_key:
-            prefs.translate_status = "请先填 API URL 和 Key"
+            prefs.translate_status = "Fill in the API URL and key first"
             self.report({"ERROR"}, prefs.translate_status)
             return {"CANCELLED"}
         models, err = api_list_models(
@@ -111,19 +111,19 @@ class KIMODO_OT_translate_fetch_models(Operator):
         )
         if models:
             prefs.translate_model_cache = "|".join(models)
-            prefs.translate_status = f"拉取成功，共 {len(models)} 个模型"
+            prefs.translate_status = f"Fetched {len(models)} models"
             self.report({"INFO"}, prefs.translate_status)
             return {"FINISHED"}
         prefs.translate_model_cache = ""
-        prefs.translate_status = f"拉取失败: {err}"
+        prefs.translate_status = f"Fetch failed: {err}"
         self.report({"ERROR"}, prefs.translate_status)
         return {"CANCELLED"}
 
 
 class KIMODO_OT_translate_test(Operator):
     bl_idname = "kimodo.translate_test"
-    bl_label = "测试翻译"
-    bl_description = "用一句中文测试 API 连通性（向'优雅地跳舞'发请求）"
+    bl_label = "Test Translation"
+    bl_description = "Test API connectivity with a sample Chinese phrase (dance gracefully)"
 
     def execute(self, context):
         from ..translate import api_translate, normalize_humanml3d
@@ -139,10 +139,10 @@ class KIMODO_OT_translate_test(Operator):
         )
         if en:
             final = normalize_humanml3d(en)
-            prefs.translate_status = f"OK: '{test_zh}' → {final!r}"
+            prefs.translate_status = f"OK: '{test_zh}' -> {final!r}"
             self.report({"INFO"}, prefs.translate_status)
             return {"FINISHED"}
-        prefs.translate_status = f"测试失败: {err}"
+        prefs.translate_status = f"Test failed: {err}"
         self.report({"ERROR"}, prefs.translate_status)
         return {"CANCELLED"}
 
@@ -159,8 +159,8 @@ def _is_mixamo_like_armature(arm_obj) -> bool:
 
 class KIMODO_OT_generate(Operator):
     bl_idname = "kimodo.generate"
-    bl_label = "生成并应用到选中骨架"
-    bl_description = "从文字生成动作，自动 retarget 到当前选中的骨架，创建为新 Action"
+    bl_label = "Generate & Apply to Selected Rig"
+    bl_description = "Generate motion from text and retarget it to the selected armature as a new Action"
     bl_options = {"REGISTER", "UNDO"}
 
     _thread: threading.Thread = None
@@ -184,7 +184,7 @@ class KIMODO_OT_generate(Operator):
         scene = context.scene
         target_arm = context.active_object
         if not _is_mixamo_like_armature(target_arm):
-            self.report({"ERROR"}, "请先选中目标角色骨架（Armature）")
+            self.report({"ERROR"}, "Select the target character armature first")
             return {"CANCELLED"}
 
         prefs = get_prefs()
@@ -198,10 +198,10 @@ class KIMODO_OT_generate(Operator):
                         prefs.venv_path, prefs.server_host, prefs.server_port
                     )
                 except Exception as e:
-                    self.report({"ERROR"}, f"服务器启动失败: {e}")
+                    self.report({"ERROR"}, f"Failed to start server: {e}")
                     return {"CANCELLED"}
             else:
-                self.report({"ERROR"}, "Kimodo 服务器未启动，请先点启动")
+                self.report({"ERROR"}, "Kimodo server is not running, click Start first")
                 return {"CANCELLED"}
 
         # ── zh→en translation (client-side) ──
@@ -237,12 +237,12 @@ class KIMODO_OT_generate(Operator):
                 if start_frame != expected_start:
                     self.report(
                         {"ERROR"},
-                        f"多段动作必须连续: '{seg.prompt}' 应从第 {expected_start} 帧开始",
+                        f"Segments must be contiguous: '{seg.prompt}' should start at frame {expected_start}",
                     )
                     return {"CANCELLED"}
                 frames = end_frame - start_frame + 1
                 if frames < 59 or frames > 299:
-                    self.report({"ERROR"}, f"分段帧数需为 59-299: {seg.prompt}")
+                    self.report({"ERROR"}, f"Segment frame count must be 59-299: {seg.prompt}")
                     return {"CANCELLED"}
                 seg_prompt, _seg_note = translate_if_needed(
                     seg.prompt,
@@ -294,7 +294,7 @@ class KIMODO_OT_generate(Operator):
                         indent=2,
                     )
             except Exception as e:
-                self.report({"ERROR"}, f"约束构建失败: {e}")
+                self.report({"ERROR"}, f"Failed to build constraints: {e}")
                 return {"CANCELLED"}
 
         cls = KIMODO_OT_generate
@@ -335,7 +335,7 @@ class KIMODO_OT_generate(Operator):
         GEN_PROGRESS.update(running=True, phase="starting", step=0, total=0)
         self._timer = context.window_manager.event_timer_add(0.5, window=context.window)
         context.window_manager.modal_handler_add(self)
-        self.report({"INFO"}, f"生成中: {final_prompt}")
+        self.report({"INFO"}, f"Generating: {final_prompt}")
         return {"RUNNING_MODAL"}
 
     def modal(self, context, event):
@@ -376,22 +376,22 @@ class KIMODO_OT_generate(Operator):
         set the scene frame range. Returns a Blender operator status set. GEN_PROGRESS
         is cleared by modal()'s finally regardless of which branch returns."""
         if cls._error:
-            self.report({"ERROR"}, f"生成失败: {cls._error}")
+            self.report({"ERROR"}, f"Generation failed: {cls._error}")
             return {"CANCELLED"}
 
         if not (cls._result and "npz_path" in cls._result):
-            self.report({"ERROR"}, "服务器未返回 NPZ 路径")
+            self.report({"ERROR"}, "The server returned no NPZ path")
             return {"CANCELLED"}
 
         npz_path = cls._result["npz_path"]
         if not os.path.isfile(npz_path):
-            self.report({"ERROR"}, f"NPZ 文件未找到: {npz_path}")
+            self.report({"ERROR"}, f"NPZ file not found: {npz_path}")
             return {"CANCELLED"}
 
         # ── Stage 2: retarget ──
         target_arm = bpy.data.objects.get(cls._target_arm_name)
         if target_arm is None or target_arm.type != "ARMATURE":
-            self.report({"ERROR"}, f"目标骨架丢失: {cls._target_arm_name}")
+            self.report({"ERROR"}, f"Target armature missing: {cls._target_arm_name}")
             return {"CANCELLED"}
 
         try:
@@ -410,11 +410,11 @@ class KIMODO_OT_generate(Operator):
             import traceback
 
             traceback.print_exc()
-            self.report({"ERROR"}, f"重定向失败: {e}")
+            self.report({"ERROR"}, f"Retarget failed: {e}")
             return {"CANCELLED"}
 
         if not actions:
-            self.report({"ERROR"}, "重定向未生成任何 Action")
+            self.report({"ERROR"}, "Retarget produced no Actions")
             return {"CANCELLED"}
 
         # Set scene frame range + fps from first action (Kimodo 固定 30 fps)
@@ -427,9 +427,9 @@ class KIMODO_OT_generate(Operator):
         context.scene.render.fps_base = 1.0
 
         msg = (
-            f"完成: {len(actions)} 个 Action 已应用到 {target_arm.name}"
+            f"Done: {len(actions)} Actions applied to {target_arm.name}"
             if len(actions) > 1
-            else f"完成: Action '{first_action.name}' 已应用到 {target_arm.name}"
+            else f"Done: Action '{first_action.name}' applied to {target_arm.name}"
         )
         for warning in cls._result.get("warnings") or []:
             self.report({"WARNING"}, str(warning))
@@ -512,7 +512,7 @@ class KIMODO_OT_generate(Operator):
             preset_name = skeleton_detect.detect_skeleton_preset(target_arm)
             if preset_name is None:
                 log.warning(
-                    "骨架预设自动识别失败，默认使用 mixamo。骨骼示例: %s",
+                    "Could not auto-detect the skeleton preset, defaulting to mixamo. Sample bones: %s",
                     [b.name for b in target_arm.data.bones[:5]],
                 )
                 preset_name = "mixamo"
@@ -561,18 +561,18 @@ def _unique_object_name(base: str) -> str:
 
 class KIMODO_OT_sample_curve_as_waypoints(Operator):
     bl_idname = "kimodo.sample_curve_as_waypoints"
-    bl_label = "采样曲线路径"
-    bl_description = "将 Bezier/NURBS 曲线按弧长采样为 Root XZ 约束路点"
+    bl_label = "Sample Path Curve"
+    bl_description = "Sample the Bezier/NURBS curve by arc length into Root XZ constraint waypoints"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
         scene = context.scene
         curve = scene.kimodo_path_curve
         if curve is None or curve.type != "CURVE":
-            self.report({"ERROR"}, "请先选择路径曲线")
+            self.report({"ERROR"}, "Select a path curve first")
             return {"CANCELLED"}
         if scene.kimodo_path_start_frame >= scene.kimodo_path_end_frame:
-            self.report({"ERROR"}, "路径结束帧必须大于开始帧")
+            self.report({"ERROR"}, "Path end frame must be greater than the start frame")
             return {"CANCELLED"}
 
         from ..retarget.constraints import sample_curve_arc_length
@@ -584,7 +584,7 @@ class KIMODO_OT_sample_curve_as_waypoints(Operator):
             depsgraph,
         )
         if not positions:
-            self.report({"ERROR"}, "曲线没有可采样点")
+            self.report({"ERROR"}, "The curve has no points to sample")
             return {"CANCELLED"}
 
         # Replace previous path-generated waypoints so resampling is deterministic.
@@ -630,14 +630,14 @@ class KIMODO_OT_sample_curve_as_waypoints(Operator):
 
         scene.kimodo_enable_constraints = True
         scene.kimodo_action_start_frame = start_f
-        self.report({"INFO"}, f"已添加 {count} 个路径路点")
+        self.report({"INFO"}, f"Added {count} path waypoints")
         return {"FINISHED"}
 
 
 class KIMODO_OT_add_constraint_marker(Operator):
     bl_idname = "kimodo.add_constraint_marker"
-    bl_label = "添加约束标记"
-    bl_description = "在 3D Cursor 位置添加 Kimodo 约束 Empty"
+    bl_label = "Add Constraint Marker"
+    bl_description = "Add a Kimodo constraint Empty at the 3D Cursor"
     bl_options = {"REGISTER", "UNDO"}
 
     constraint_type: bpy.props.StringProperty(default="root2d")
@@ -660,14 +660,14 @@ class KIMODO_OT_add_constraint_marker(Operator):
         item.label = empty.name
         scene.kimodo_constraint_index = len(scene.kimodo_motion_constraints) - 1
         scene.kimodo_enable_constraints = True
-        self.report({"INFO"}, f"已添加约束: {empty.name}")
+        self.report({"INFO"}, f"Added constraint: {empty.name}")
         return {"FINISHED"}
 
 
 class KIMODO_OT_clear_constraints(Operator):
     bl_idname = "kimodo.clear_constraints"
-    bl_label = "清空约束"
-    bl_description = "清除 Kimodo 约束列表和由插件创建的约束 Empty"
+    bl_label = "Clear Constraints"
+    bl_description = "Clear the Kimodo constraint list and the constraint Emptys created by the add-on"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
@@ -678,14 +678,14 @@ class KIMODO_OT_clear_constraints(Operator):
                 bpy.data.objects.remove(obj, do_unlink=True)
         scene.kimodo_motion_constraints.clear()
         scene.kimodo_constraint_json_preview = ""
-        self.report({"INFO"}, "Kimodo 约束已清空")
+        self.report({"INFO"}, "Kimodo constraints cleared")
         return {"FINISHED"}
 
 
 class KIMODO_OT_preview_constraints_json(Operator):
     bl_idname = "kimodo.preview_constraints_json"
-    bl_label = "预览约束 JSON"
-    bl_description = "构建并缓存当前 Kimodo 官方约束 JSON"
+    bl_label = "Preview Constraint JSON"
+    bl_description = "Build and cache the current Kimodo official constraint JSON"
     bl_options = {"REGISTER"}
 
     def execute(self, context):
@@ -710,17 +710,17 @@ class KIMODO_OT_preview_constraints_json(Operator):
                 auto_canonicalize=bool(scene.kimodo_auto_canonicalize),
             )
             scene.kimodo_constraint_json_preview = json.dumps(result.constraints, indent=2)
-            self.report({"INFO"}, f"约束 JSON: {len(result.constraints)} 个 block")
+            self.report({"INFO"}, f"Constraint JSON: {len(result.constraints)} blocks")
             return {"FINISHED"}
         except Exception as e:
-            self.report({"ERROR"}, f"约束 JSON 构建失败: {e}")
+            self.report({"ERROR"}, f"Failed to build constraint JSON: {e}")
             return {"CANCELLED"}
 
 
 class KIMODO_OT_create_soma_proxy(Operator):
     bl_idname = "kimodo.create_soma_proxy"
-    bl_label = "创建 SOMA 约束骨架"
-    bl_description = "创建用于 fullbody/手脚约束的 SOMA proxy armature"
+    bl_label = "Create SOMA Constraint Rig"
+    bl_description = "Create the SOMA proxy armature used for fullbody/hand/foot constraints"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
@@ -728,14 +728,14 @@ class KIMODO_OT_create_soma_proxy(Operator):
 
         arm = create_soma_proxy_armature(context)
         context.view_layer.objects.active = arm
-        self.report({"INFO"}, f"已创建 {arm.name}")
+        self.report({"INFO"}, f"Created {arm.name}")
         return {"FINISHED"}
 
 
 class KIMODO_OT_add_motion_segment(Operator):
     bl_idname = "kimodo.add_motion_segment"
-    bl_label = "添加动作分段"
-    bl_description = "按当前 prompt 和帧范围添加一个 multi-prompt 分段"
+    bl_label = "Add Motion Segment"
+    bl_description = "Add a multi-prompt segment using the current prompt and frame range"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
@@ -754,19 +754,19 @@ class KIMODO_OT_add_motion_segment(Operator):
         seg.enabled = True
         seg.seed = int(scene.kimodo_seed)
         scene.kimodo_segment_index = len(scene.kimodo_motion_segments) - 1
-        self.report({"INFO"}, "已添加动作分段")
+        self.report({"INFO"}, "Added motion segment")
         return {"FINISHED"}
 
 
 class KIMODO_OT_clear_motion_segments(Operator):
     bl_idname = "kimodo.clear_motion_segments"
-    bl_label = "清空动作分段"
-    bl_description = "清空 multi-prompt 动作分段"
+    bl_label = "Clear Motion Segments"
+    bl_description = "Clear the multi-prompt motion segments"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
         context.scene.kimodo_motion_segments.clear()
-        self.report({"INFO"}, "动作分段已清空")
+        self.report({"INFO"}, "Motion segments cleared")
         return {"FINISHED"}
 
 
@@ -775,8 +775,8 @@ class KIMODO_OT_clear_motion_segments(Operator):
 
 class KIMODO_OT_switch_action(Operator):
     bl_idname = "kimodo.switch_action"
-    bl_label = "切换到此 Action"
-    bl_description = "把选中的 Kimodo Action 设为当前激活"
+    bl_label = "Switch to This Action"
+    bl_description = "Make the selected Kimodo Action the active one"
     bl_options = {"REGISTER", "UNDO"}
 
     action_name: bpy.props.StringProperty()
@@ -789,7 +789,7 @@ class KIMODO_OT_switch_action(Operator):
         arm = context.active_object
         action = bpy.data.actions.get(self.action_name)
         if action is None:
-            self.report({"ERROR"}, f"Action 不存在: {self.action_name}")
+            self.report({"ERROR"}, f"Action does not exist: {self.action_name}")
             return {"CANCELLED"}
         if arm.animation_data is None:
             arm.animation_data_create()
@@ -798,14 +798,14 @@ class KIMODO_OT_switch_action(Operator):
         fr = action.frame_range
         context.scene.frame_start = int(fr[0])
         context.scene.frame_end = int(fr[1])
-        self.report({"INFO"}, f"已切换到 {self.action_name}")
+        self.report({"INFO"}, f"Switched to {self.action_name}")
         return {"FINISHED"}
 
 
 class KIMODO_OT_delete_action(Operator):
     bl_idname = "kimodo.delete_action"
-    bl_label = "删除 Action"
-    bl_description = "从 Blender 数据中删除此 Action"
+    bl_label = "Delete Action"
+    bl_description = "Delete this Action from the Blender data"
     bl_options = {"REGISTER", "UNDO"}
 
     action_name: bpy.props.StringProperty()
@@ -813,7 +813,7 @@ class KIMODO_OT_delete_action(Operator):
     def execute(self, context):
         action = bpy.data.actions.get(self.action_name)
         if action is None:
-            self.report({"WARNING"}, f"Action 已不存在: {self.action_name}")
+            self.report({"WARNING"}, f"Action no longer exists: {self.action_name}")
             return {"CANCELLED"}
 
         # If currently active on any armature, clear it
@@ -822,7 +822,7 @@ class KIMODO_OT_delete_action(Operator):
                 obj.animation_data.action = None
 
         bpy.data.actions.remove(action)
-        self.report({"INFO"}, f"已删除 {self.action_name}")
+        self.report({"INFO"}, f"Deleted {self.action_name}")
         return {"FINISHED"}
 
 
@@ -831,8 +831,8 @@ class KIMODO_OT_delete_action(Operator):
 
 class KIMODO_OT_load_model(Operator):
     bl_idname = "kimodo.load_model"
-    bl_label = "加载模型进内存"
-    bl_description = "把 Kimodo 模型加载到设备内存（首次约 40-60s）。加载后生成无需再等加载。"
+    bl_label = "Load Model to Memory"
+    bl_description = "Load the Kimodo model into device memory (~40-60s the first time). Generation will not wait for loading after that."
 
     _thread: threading.Thread = None
     _error: str = None
@@ -847,10 +847,10 @@ class KIMODO_OT_load_model(Operator):
                 try:
                     manager.start_server(prefs.venv_path, prefs.server_host, prefs.server_port)
                 except Exception as e:
-                    self.report({"ERROR"}, f"服务器启动失败: {e}")
+                    self.report({"ERROR"}, f"Failed to start server: {e}")
                     return {"CANCELLED"}
             else:
-                self.report({"ERROR"}, "Kimodo 服务器未启动，请先点启动")
+                self.report({"ERROR"}, "Kimodo server is not running, click Start first")
                 return {"CANCELLED"}
 
         cls = KIMODO_OT_load_model
@@ -871,22 +871,22 @@ class KIMODO_OT_load_model(Operator):
         # background load completes, even with no further UI events.
         GEN_PROGRESS.update(running=True, phase="loading", step=0, total=0)
         _watch_thread_until_done(lambda: KIMODO_OT_load_model._thread)
-        self.report({"INFO"}, f"加载模型: {model}（约 40-60s，完成后按钮变为卸载）")
+        self.report({"INFO"}, f"Loading model: {model} (~40-60s; the button becomes Unload when done)")
         return {"FINISHED"}
 
 
 class KIMODO_OT_unload_model(Operator):
     bl_idname = "kimodo.unload_model"
-    bl_label = "卸载模型"
-    bl_description = "把 Kimodo 模型从设备内存中卸载，释放显存/内存"
+    bl_label = "Unload Model"
+    bl_description = "Unload the Kimodo model from device memory, freeing VRAM/RAM"
 
     def execute(self, context):
         client = KimodoClient(get_server_url())
         try:
             resp = client.unload_model()
-            self.report({"INFO"}, f"模型已卸载: {resp.get('message', 'ok')}")
+            self.report({"INFO"}, f"Model unloaded: {resp.get('message', 'ok')}")
         except Exception as e:
-            self.report({"ERROR"}, f"卸载失败: {e}")
+            self.report({"ERROR"}, f"Unload failed: {e}")
         return {"FINISHED"}
 
 

@@ -163,34 +163,34 @@ def _get_cached_precheck(max_age: float = 10.0) -> dict[str, Any]:
 
 class KIMODO_OT_install_runtime(Operator):
     bl_idname = "kimodo.install_runtime"
-    bl_label = "一键安装 Runtime"
+    bl_label = "Install Runtime (One-Click)"
     bl_description = (
-        "打开终端窗口运行安装脚本（Windows: install.ps1 / macOS: install_mac.sh）。"
-        "会装 Python venv + PyTorch + kimodo + fastapi 服务依赖。"
-        "耗时 10-30 分钟，占用 5GB+ 磁盘。"
+        "Opens a terminal window to run the installer (Windows: install.ps1 / macOS: install_mac.sh). "
+        "Installs the Python venv + PyTorch + kimodo + FastAPI server deps. "
+        "Takes 10-30 minutes and 5GB+ of disk."
     )
 
     proxy: StringProperty(
-        name="代理",
-        description="HTTP 代理，如 http://127.0.0.1:7890（留空则不用）",
+        name="Proxy",
+        description="HTTP proxy, e.g. http://127.0.0.1:7890 (leave empty to not use one)",
         default="",
     )
     mirror: EnumProperty(
-        name="模型镜像",
+        name="Model Mirror",
         items=[
-            ("auto", "自动", "优先直连 HF，失败换 hf-mirror"),
-            ("hf", "HuggingFace", "直连 huggingface.co（需代理）"),
-            ("hf-mirror", "HF-Mirror", "国内镜像 hf-mirror.com"),
+            ("auto", "Auto", "Try huggingface.co first, fall back to hf-mirror"),
+            ("hf", "HuggingFace", "Direct huggingface.co (needs a proxy)"),
+            ("hf-mirror", "HF-Mirror", "China mirror hf-mirror.com"),
         ],
         default="auto",
     )
     pip_mirror: EnumProperty(
-        name="Pip 镜像",
+        name="Pip Mirror",
         items=[
-            ("auto", "自动", "优先 pypi.org，失败换清华"),
-            ("pypi", "官方 PyPI", "pypi.org/simple"),
-            ("tsinghua", "清华", "pypi.tuna.tsinghua.edu.cn"),
-            ("aliyun", "阿里云", "mirrors.aliyun.com/pypi"),
+            ("auto", "Auto", "Try pypi.org first, fall back to Tsinghua"),
+            ("pypi", "Official PyPI", "pypi.org/simple"),
+            ("tsinghua", "Tsinghua", "pypi.tuna.tsinghua.edu.cn"),
+            ("aliyun", "Aliyun", "mirrors.aliyun.com/pypi"),
         ],
         default="auto",
     )
@@ -204,11 +204,11 @@ class KIMODO_OT_install_runtime(Operator):
         layout.prop(self, "mirror")
         layout.prop(self, "pip_mirror")
         box = layout.box()
-        term = "终端 (Terminal)" if sys.platform == "darwin" else "PowerShell"
-        box.label(text=f"会打开新 {term} 窗口显示进度", icon="INFO")
-        box.label(text="关窗 = 取消；进度同时写到 install.log", icon="CONSOLE")
+        term = "Terminal" if sys.platform == "darwin" else "PowerShell"
+        box.label(text=f"A new {term} window opens to show progress", icon="INFO")
+        box.label(text="Closing the window cancels; progress is also written to install.log", icon="CONSOLE")
         if sys.platform == "darwin":
-            box.label(text="macOS: 走 Metal/MPS，无需 fbxsdkpy", icon="INFO")
+            box.label(text="macOS: uses Metal/MPS, no fbxsdkpy needed", icon="INFO")
 
     def execute(self, context):
         if sys.platform == "win32":
@@ -237,7 +237,7 @@ class KIMODO_OT_install_runtime(Operator):
                     cwd=str(_installer_dir()),
                 )
             except Exception as e:  # noqa: BLE001
-                self.report({"ERROR"}, f"无法启动 PowerShell: {e}")
+                self.report({"ERROR"}, f"Failed to launch PowerShell: {e}")
                 return {"CANCELLED"}
 
         elif sys.platform == "darwin":
@@ -276,14 +276,14 @@ class KIMODO_OT_install_runtime(Operator):
                     "-e", 'tell application "Terminal" to activate',
                 ])
             except Exception as e:  # noqa: BLE001
-                self.report({"ERROR"}, f"无法启动 Terminal: {e}")
+                self.report({"ERROR"}, f"Failed to launch Terminal: {e}")
                 return {"CANCELLED"}
 
         else:
-            self.report({"ERROR"}, "暂不支持该平台（仅 Windows / macOS）")
+            self.report({"ERROR"}, "Platform not supported (Windows / macOS only)")
             return {"CANCELLED"}
 
-        self.report({"INFO"}, "已打开安装窗口。装完后点'重新检查'刷新状态")
+        self.report({"INFO"}, "Install window opened. Click 'Re-Check' when it finishes to refresh the status")
         # Kick off a poller so the panel auto-refreshes every 15s during install
         _schedule_install_watcher()
         return {"FINISHED"}
@@ -291,24 +291,24 @@ class KIMODO_OT_install_runtime(Operator):
 
 class KIMODO_OT_refresh_precheck(Operator):
     bl_idname = "kimodo.refresh_precheck"
-    bl_label = "重新检查"
-    bl_description = "重新运行 precheck.py 刷新 Runtime 状态"
+    bl_label = "Re-Check"
+    bl_description = "Re-run precheck.py to refresh the runtime status"
 
     def execute(self, context):
         _refresh_precheck_async()
-        self.report({"INFO"}, "Precheck 已在后台执行…")
+        self.report({"INFO"}, "Precheck running in the background...")
         return {"FINISHED"}
 
 
 class KIMODO_OT_open_install_log(Operator):
     bl_idname = "kimodo.open_install_log"
-    bl_label = "查看日志"
-    bl_description = "在资源管理器中定位 install.log"
+    bl_label = "View Log"
+    bl_description = "Locate install.log in the file manager"
 
     def execute(self, context):
         log = _install_log_path()
         if not log.is_file():
-            self.report({"WARNING"}, f"日志不存在: {log}")
+            self.report({"WARNING"}, f"Log not found: {log}")
             return {"CANCELLED"}
         try:
             if sys.platform == "win32":
@@ -318,30 +318,30 @@ class KIMODO_OT_open_install_log(Operator):
             else:
                 subprocess.Popen(["xdg-open", str(log.parent)])
         except Exception as e:  # noqa: BLE001
-            self.report({"ERROR"}, f"打不开文件位置: {e}")
+            self.report({"ERROR"}, f"Cannot open the file location: {e}")
             return {"CANCELLED"}
         return {"FINISHED"}
 
 
 class KIMODO_OT_download_model(Operator):
     bl_idname = "kimodo.download_model"
-    bl_label = "下载 Kimodo 模型"
+    bl_label = "Download Kimodo Model"
     bl_description = (
-        "在新 PowerShell 窗口运行 download_model.py。"
-        "需要 HF token 才能下 LLaMA-3-8B（约 16GB）"
+        "Runs download_model.py in a new window. "
+        "An HF token is required for LLaMA-3-8B (~16GB)"
     )
 
     mirror: EnumProperty(
-        name="镜像",
+        name="Mirror",
         items=[
-            ("auto", "自动", ""),
+            ("auto", "Auto", ""),
             ("hf", "HuggingFace", ""),
             ("hf-mirror", "HF-Mirror", ""),
         ],
         default="auto",
     )
     skip_llama: bpy.props.BoolProperty(  # type: ignore[valid-type]
-        name="跳过 LLaMA (仅下载 Kimodo 1.1GB 主模型)",
+        name="Skip LLaMA (only download the 1.1GB Kimodo model)",
         default=False,
     )
 
@@ -353,8 +353,8 @@ class KIMODO_OT_download_model(Operator):
         layout.prop(self, "mirror")
         layout.prop(self, "skip_llama")
         box = layout.box()
-        box.label(text="LLaMA-3-8B 是 gated model", icon="LOCKED")
-        box.label(text="需先 https://huggingface.co/meta-llama 申请", icon="URL")
+        box.label(text="LLaMA-3-8B is a gated model", icon="LOCKED")
+        box.label(text="Request access at https://huggingface.co/meta-llama first", icon="URL")
 
     def execute(self, context):
         from ..preferences import get_prefs
@@ -363,12 +363,12 @@ class KIMODO_OT_download_model(Operator):
         prefs = get_prefs()
         venv_py = Path(manager.get_venv_python(prefs.venv_path))  # cross-platform venv python
         if not venv_py.is_file():
-            self.report({"ERROR"}, f"venv python 不存在: {venv_py}")
+            self.report({"ERROR"}, f"venv python not found: {venv_py}")
             return {"CANCELLED"}
 
         script = _installer_dir() / "download_model.py"
         if not script.is_file():
-            self.report({"ERROR"}, f"download_model.py 不存在: {script}")
+            self.report({"ERROR"}, f"download_model.py not found: {script}")
             return {"CANCELLED"}
 
         extra = " --skip-llama" if self.skip_llama else ""
@@ -398,16 +398,16 @@ class KIMODO_OT_download_model(Operator):
                 subprocess.Popen([str(venv_py), str(script), "--mirror", self.mirror]
                                  + (["--skip-llama"] if self.skip_llama else []))
         except Exception as e:  # noqa: BLE001
-            self.report({"ERROR"}, f"无法启动下载: {e}")
+            self.report({"ERROR"}, f"Failed to start the download: {e}")
             return {"CANCELLED"}
-        self.report({"INFO"}, "下载已在新窗口中开始…")
+        self.report({"INFO"}, "Download started in a new window...")
         return {"FINISHED"}
 
 
 class KIMODO_OT_set_venv_to_default(Operator):
     bl_idname = "kimodo.set_venv_to_default"
-    bl_label = "应用默认 venv 路径"
-    bl_description = "把 venv_path 设回当前平台默认路径"
+    bl_label = "Apply Default venv Path"
+    bl_description = "Reset venv_path to this platform's default path"
 
     def execute(self, context):
         from ..preferences import default_venv_path, get_prefs
@@ -442,7 +442,7 @@ def _schedule_install_watcher() -> None:
 
 
 class KIMODO_PT_install(Panel):
-    bl_label = "Runtime 安装"
+    bl_label = "Runtime Install"
     bl_idname = "KIMODO_PT_install"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -457,10 +457,10 @@ class KIMODO_PT_install(Panel):
 
         # ── Status summary ──
         box = layout.box()
-        box.label(text="Runtime 状态", icon="SYSTEM")
+        box.label(text="Runtime Status", icon="SYSTEM")
 
         if not pc:
-            box.label(text="检查中…", icon="SORTTIME")
+            box.label(text="Checking...", icon="SORTTIME")
             return
 
         def _row(
@@ -487,14 +487,14 @@ class KIMODO_PT_install(Panel):
         elif is_mac:
             if pyt is None or "error" in (pyt or {}):
                 # torch not installed yet → MPS can't be probed. Don't cry wolf.
-                _row("GPU: Apple / Metal", True, "MPS 待装 PyTorch 后检测", icon_ok="INFO")
+                _row("GPU: Apple / Metal", True, "MPS will be detected after PyTorch is installed", icon_ok="INFO")
             else:
                 mps = bool(pyt.get("mps_available"))
-                _row("GPU: Apple / Metal", mps, "MPS 可用" if mps else "MPS 不可用，将用 CPU")
+                _row("GPU: Apple / Metal", mps, "MPS available" if mps else "MPS unavailable, will use CPU")
         else:
-            _row("GPU: 未检测", False, "需要 NVIDIA 驱动")
+            _row("GPU: not detected", False, "NVIDIA driver required")
 
-        _row("venv", pc.get("venv_ready", False), pc.get("venv_exe") or "未创建")
+        _row("venv", pc.get("venv_ready", False), pc.get("venv_exe") or "not created")
 
         if pyt and "error" not in (pyt or {}):
             # On macOS the relevant backend is MPS (Metal); on Windows it's CUDA.
@@ -503,31 +503,31 @@ class KIMODO_PT_install(Panel):
             backend_val = pyt.get("mps_available") if is_mac else pyt.get("cuda_available")
             _row("PyTorch", backend_ok, f"{pyt.get('version')} {backend}={backend_val}")
         else:
-            _row("PyTorch", False, (pyt or {}).get("error", "未安装")[:40])
+            _row("PyTorch", False, (pyt or {}).get("error", "not installed")[:40])
 
         # Retargeting runs inside Blender on every platform now, so the Autodesk FBX
         # SDK (fbxsdkpy) is never needed.
-        _row("FBX retarget", True, "Blender 内置（无需 fbxsdkpy）")
+        _row("FBX retarget", True, "Built into Blender (no fbxsdkpy needed)")
 
         km = pc.get("kimodo", {})
-        _row("kimodo", km.get("installed", False), km.get("version") or "未安装")
+        _row("kimodo", km.get("installed", False), km.get("version") or "not installed")
 
         _row(
-            f"HF 模型缓存 ({km.get('cache_size_gb', 0)} GB)",
+            f"HF Model Cache ({km.get('cache_size_gb', 0)} GB)",
             km.get("model_cached", False),
-            "已缓存" if km.get("model_cached") else "未下载",
+            "cached" if km.get("model_cached") else "not downloaded",
         )
 
         hf = pc.get("hf_token", {})
         _row(
             "HF Token",
             hf.get("present", False),
-            "已登录" if hf.get("present") else "未登录（LLaMA 下载会失败）",
+            "logged in" if hf.get("present") else "not logged in (LLaMA download will fail)",
         )
 
         free = pc.get("disk_free_gb", 0)
         _row(
-            f"磁盘剩余 {free} GB", free >= 30, "≥30GB OK" if free >= 30 else "不足 30GB"
+            f"Disk free {free} GB", free >= 30, "30GB+ OK" if free >= 30 else "less than 30GB"
         )
 
         # ── Errors / warnings ──
@@ -541,7 +541,7 @@ class KIMODO_PT_install(Panel):
         col = layout.column(align=True)
 
         if next_action == "ok":
-            col.label(text="Runtime 就绪 ✓", icon="CHECKMARK")
+            col.label(text="Runtime ready", icon="CHECKMARK")
         else:
             sub = col.column(align=True)
             sub.scale_y = 1.5

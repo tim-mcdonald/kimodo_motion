@@ -342,9 +342,9 @@ Invoke-Step "[1/8] Locate Python 3.12" {
             Invoke-Download -Uri $PY_INSTALLER_URL -OutFile $installer `
                 -TimeoutSec 600 -Retries 3 -ProxyUrl $Proxy
         } catch {
-            Write-Log "Python installer 下载失败. Try:" -Level ERROR
-            Write-Log "  1. 加代理重跑: install.cmd -Proxy http://127.0.0.1:7890" -Level ERROR
-            Write-Log "  2. 手动下载 $PY_INSTALLER_URL 放到 $installer 再重跑" -Level ERROR
+            Write-Log "Python installer download failed. Try:" -Level ERROR
+            Write-Log "  1. Rerun with a proxy: install.cmd -Proxy http://127.0.0.1:7890" -Level ERROR
+            Write-Log "  2. Manually download $PY_INSTALLER_URL to $installer and rerun" -Level ERROR
             throw
         }
     }
@@ -449,7 +449,7 @@ if (-not $SkipTorch) {
             --index-url $torchUrl `
             --retries 5 --timeout 120 --progress-bar on
         if ($LASTEXITCODE -ne 0) {
-            Write-Log "torch 下载失败. 检查: 网络 / 代理 / download.pytorch.org 是否可达" -Level ERROR
+            Write-Log "torch download failed. Check: network / proxy / reachability of download.pytorch.org" -Level ERROR
             throw "torch install failed (cu channel $CudaChannel)"
         }
     }

@@ -336,7 +336,7 @@ def run(probe_venv: bool = True, venv_path: str | None = None) -> dict[str, Any]
     errors: list[str] = []
     warnings: list[str] = []
 
-    # Honor the addon's "虚拟环境路径" preference (passed via --venv) so a
+    # Honor the addon's "Virtual Env Path" preference (passed via --venv) so a
     # user-specified / dev runtime is detected instead of the hardcoded default.
     venv_dir = Path(venv_path).expanduser() if venv_path else DEFAULT_VENV
     venv_py = _venv_python(venv_dir)
@@ -353,18 +353,18 @@ def run(probe_venv: bool = True, venv_path: str | None = None) -> dict[str, Any]
             pass
         else:
             errors.append(
-                "nvidia-smi unavailable — 没检测到 NVIDIA GPU 或驱动，Kimodo 需要 NVIDIA（或 Apple Silicon/MPS）"
+                "nvidia-smi unavailable - no NVIDIA GPU or driver detected; Kimodo needs NVIDIA (or Apple Silicon/MPS)"
             )
     else:
         try:
             cc = float(gpu["compute_cap"])
             if cc < 8.0:
-                warnings.append(f"Compute capability {cc} < 8.0 — 推荐 RTX 30/40/50 系")
+                warnings.append(f"Compute capability {cc} < 8.0 - an RTX 30/40/50 series card is recommended")
         except (TypeError, ValueError):
             pass
         if gpu.get("vram_gb") and gpu["vram_gb"] < 16:
             warnings.append(
-                f"显存 {gpu['vram_gb']}GB < 16GB — LLaMA-3-8B 文本编码器会 OOM"
+                f"VRAM {gpu['vram_gb']}GB < 16GB - the LLaMA-3-8B text encoder will OOM"
             )
 
     pytorch = None
@@ -407,18 +407,18 @@ def run(probe_venv: bool = True, venv_path: str | None = None) -> dict[str, Any]
             # On macOS the accelerator is MPS, never CUDA. A missing MPS backend is a
             # soft fallback to CPU (slow but works), not a version mismatch.
             if not pytorch.get("mps_available"):
-                warnings.append("PyTorch 已装但 MPS 不可用 — 将用 CPU（较慢）")
+                warnings.append("PyTorch installed but MPS unavailable - will use CPU (slow)")
         elif not pytorch.get("cuda_available"):
-            errors.append("PyTorch installed but CUDA unavailable — 版本不匹配")
+            errors.append("PyTorch installed but CUDA unavailable - version mismatch")
         # NOTE: fbxsdkpy is NO LONGER required on any platform — retargeting runs
         # inside Blender (retarget/bpy_retarget.py). The probe field is kept for the
         # JSON contract, but its absence is not an error and must not gate next_action.
         if not kimodo_info["installed"]:
             errors.append("kimodo not installed")
     if not hf["present"] and kimodo_info["installed"] and not kimodo_info["model_cached"]:
-        warnings.append("HuggingFace token 未设置 — LLaMA-3-8B 是 gated model 必须登录")
+        warnings.append("HuggingFace token not set - LLaMA-3-8B is a gated model, login required")
     if disk_free < 30:
-        warnings.append(f"磁盘剩余 {disk_free}GB < 30GB — 模型要 17GB+")
+        warnings.append(f"Disk free {disk_free}GB < 30GB - the model needs 17GB+")
 
     # Next action recommendation
     next_action: str | None
