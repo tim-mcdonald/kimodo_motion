@@ -172,13 +172,19 @@ class KimodoPreferences(AddonPreferences):
         name="模型",
         items=[
             (
+                "Kimodo-SOMA-RP-v1.2",
+                "SOMA RP v1.2 (官方默认)",
+                "修正训练/测试划分后重训（v1.1 有 BONES-SEED 泄漏）",
+            ),
+            (
                 "Kimodo-SOMA-RP-v1",
-                "SOMA RP (完整 700h)",
+                "SOMA RP v1 (完整 700h)",
                 "最高质量，完整 Rigplay 数据集",
             ),
+            ("Kimodo-SOMA-RP-v1.1", "SOMA RP v1.1", "有 BONES-SEED 测试泄漏，不推荐使用"),
             ("Kimodo-SOMA-SEED-v1", "SOMA SEED (288h)", "公开数据集"),
         ],
-        default="Kimodo-SOMA-RP-v1",
+        default="Kimodo-SOMA-RP-v1.2",
         description="Kimodo 模型变体",
     )
     fbx_retarget_timeout: IntProperty(

@@ -5,6 +5,20 @@ All notable changes to the **Blender Kimodo Motion** addon.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `preferences.py` — model picker now offers `Kimodo-SOMA-RP-v1.2` (new NVIDIA
+  default, retrained on corrected splits) and `Kimodo-SOMA-RP-v1.1`. Requires a
+  kimodo with the v1.2 registry entry (nv-tlabs/kimodo >= 2026-06-19 sync; the
+  atticus-lv/kimodo arm64 fork was synced to `e1c219c`). Server, retarget and
+  constraint code are unchanged: v1.2 emits the same 77-joint SOMA output as v1.
+
+### Changed
+- Model picker default is now `Kimodo-SOMA-RP-v1.2` (matches the upstream demo/CLI
+  default). The HTTP request defaults in `server_app/main.py` still say v1; the UI
+  always sends its selected model.
+
 ## [2.0.0] — 2026-06-19 — macOS / Apple Silicon (Metal/MPS) support
 
 Brings the addon to macOS by removing the Autodesk FBX SDK dependency and routing
