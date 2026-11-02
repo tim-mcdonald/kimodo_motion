@@ -468,7 +468,7 @@ Invoke-Step "[6/8] Install kimodo + server deps" {
         Write-Log "kimodo $($r.Output.Trim()) already installed — skip" -Level OK
     } else {
         Write-Log "Installing kimodo[all] from github (this will take a while)"
-        & $VPip install "kimodo[all] @ git+https://github.com/nv-tlabs/kimodo.git" `
+        & $VPip install "kimodo[all] @ git+https://github.com/tim-mcdonald/kimodo.git" `
             --index-url $script:PipIndex `
             --retries 5 --timeout 120
         if ($LASTEXITCODE -ne 0) { throw "kimodo install failed" }

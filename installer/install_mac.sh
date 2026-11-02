@@ -17,7 +17,7 @@
 # Options via environment variables (the Blender install panel sets these):
 #   KIMODO_PROXY        http(s) proxy, e.g. http://127.0.0.1:7890
 #   KIMODO_PIP_MIRROR   auto | pypi | tsinghua | aliyun     (default: auto)
-#   KIMODO_GIT_URL      kimodo git URL (default: atticus-lv MPS fork)
+#   KIMODO_GIT_URL      kimodo git URL (default: tim-mcdonald fork of the atticus-lv MPS fork)
 #   KIMODO_SKIP_TORCH   1 to skip torch (dev only)
 #
 # Optional official post-processing:
@@ -40,7 +40,7 @@ export HF_HOME="$HF_CACHE"   # models download here at first generation, not ~/.
 LOG_PATH="$RUNTIME_DIR/install.log"
 PY_MIN_MINOR=10
 PY_MAX_MINOR=13
-KIMODO_GIT_URL="${KIMODO_GIT_URL:-https://github.com/atticus-lv/kimodo.git}"
+KIMODO_GIT_URL="${KIMODO_GIT_URL:-https://github.com/tim-mcdonald/kimodo.git}"
 PIP_MIRROR="${KIMODO_PIP_MIRROR:-auto}"
 
 mkdir -p "$RUNTIME_DIR"

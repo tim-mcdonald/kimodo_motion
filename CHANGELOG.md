@@ -18,6 +18,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Model picker default is now `Kimodo-SOMA-RP-v1.2` (matches the upstream demo/CLI
   default). The HTTP request defaults in `server_app/main.py` still say v1; the UI
   always sends its selected model.
+- All user-visible strings are now English: property labels and descriptions,
+  operator buttons, status and progress messages, and installer console prompts.
+  Code comments and load-bearing data (MMD preset bone names, FBX joint-detection
+  keywords, the translate feature's Chinese dictionary) are intentionally unchanged.
+- The runtime installer now defaults to the `tim-mcdonald/kimodo` fork on both
+  platforms (the Windows installer previously installed from `nv-tlabs/kimodo`
+  upstream), so the add-on and its kimodo fork form one consistent source of truth.
 
 ## [2.0.0] — 2026-06-19 — macOS / Apple Silicon (Metal/MPS) support
 

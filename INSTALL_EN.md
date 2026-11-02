@@ -82,7 +82,7 @@ Installer options (environment variables):
 | `KIMODO_VENV` | venv target (runtime/model cache sit next to it) | `~/KimodoMotionRuntime/venv` |
 | `KIMODO_PIP_MIRROR` | `auto` / `pypi` / `tsinghua` / `aliyun` | `auto` |
 | `KIMODO_PROXY` | HTTP(S) proxy | empty |
-| `KIMODO_GIT_URL` | kimodo git URL **or local directory** (must include MPS backend) | `https://github.com/atticus-lv/kimodo.git` |
+| `KIMODO_GIT_URL` | kimodo git URL **or local directory** (must include MPS backend) | `https://github.com/tim-mcdonald/kimodo.git` |
 | `KIMODO_HF_HOME` | model cache location (overrides the default next to the venv) | `<venv parent>/hf-cache` |
 | `KIMODO_DEVICE` | `auto` / `mps` / `cpu` / `cuda` | `auto` (Mac → MPS) |
 
@@ -95,7 +95,7 @@ brew install cmake simde pybind11 eigen
 
 KIMODO_VENV="$HOME/KimodoMotionRuntime/venv"  # or replace with the actual add-on venv path
 "$KIMODO_VENV/bin/python" -m pip install --force-reinstall --no-deps \
-  "kimodo @ git+https://github.com/atticus-lv/kimodo.git"
+  "kimodo @ git+https://github.com/tim-mcdonald/kimodo.git"
 
 "$KIMODO_VENV/bin/python" -c "import motion_correction; from motion_correction import motion_postprocess; print('motion_correction OK')"
 ```
@@ -213,7 +213,7 @@ source ~/.kimodo_venv/bin/activate            # Windows: .\.kimodo_venv\Scripts\
 pip install torch torchvision torchaudio      # Windows: --index-url https://download.pytorch.org/whl/cu128
 
 # 3. kimodo (MPS fork; skip the optional motion_correction post-processing extension by default)
-SKIP_MOTION_CORRECTION_IN_SETUP=1 pip install "kimodo @ git+https://github.com/atticus-lv/kimodo.git"
+SKIP_MOTION_CORRECTION_IN_SETUP=1 pip install "kimodo @ git+https://github.com/tim-mcdonald/kimodo.git"
 
 # 4. server deps
 pip install fastapi "uvicorn[standard]" pydantic scipy bvhio requests

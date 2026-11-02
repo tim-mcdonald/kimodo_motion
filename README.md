@@ -51,8 +51,9 @@ one-click runtime installer/package for Linux**; use the manual install steps in
      `INSTALL.md` / `INSTALL_EN.md`.
 3. Set the add-on's **venv path** preference to where the runtime was installed.
 
-The runtime installs Kimodo from **[atticus-lv/kimodo](https://github.com/atticus-lv/kimodo)**, a
-fork with the MPS/macOS and post-processing compatibility work used by this add-on. The text
+The runtime installs Kimodo from **[tim-mcdonald/kimodo](https://github.com/tim-mcdonald/kimodo)**, a
+fork of [atticus-lv/kimodo](https://github.com/atticus-lv/kimodo) with the MPS/macOS and post-processing
+compatibility work used by this add-on. The text
 encoder needs **Meta-Llama-3-8B-Instruct** (~16 GB, gated by Meta); an ungated mirror is also
 supported. Full steps, options, and the model setup are in
 **[INSTALL.md](./INSTALL.md)** (中文) / **[INSTALL_EN.md](./INSTALL_EN.md)** (English).
@@ -111,7 +112,7 @@ original copyright and authorship are retained.
 |-----------|---------|
 | This add-on (`kimodo_motion/*`) | GPL-3.0-or-later |
 | Vendored retarget reference (`vendor/kimodo_retarget/*`) | Apache-2.0 ([ComfyUI-Kimodo](https://github.com/jtydhr88/ComfyUI-Kimodo)) |
-| [atticus-lv/kimodo](https://github.com/atticus-lv/kimodo), based on NVIDIA [kimodo](https://github.com/nv-tlabs/kimodo) | Apache-2.0 |
+| [tim-mcdonald/kimodo](https://github.com/tim-mcdonald/kimodo), fork of [atticus-lv/kimodo](https://github.com/atticus-lv/kimodo) based on NVIDIA [kimodo](https://github.com/nv-tlabs/kimodo) | Apache-2.0 |
 | Kimodo-SOMA-RP-v1 weights | NVIDIA Open Model License |
 | Meta-Llama-3-8B-Instruct | Meta Llama-3 Community License (gated) |
 | PyTorch | BSD-3-Clause |

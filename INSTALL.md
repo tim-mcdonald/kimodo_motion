@@ -78,7 +78,7 @@ KIMODO_VENV="$(pwd)/.kimodo-runtime/venv" bash installer/install_mac.sh
 | `KIMODO_VENV` | venv 目标路径（运行时/模型缓存放它旁边） | `~/KimodoMotionRuntime/venv` |
 | `KIMODO_PIP_MIRROR` | `auto` / `pypi` / `tsinghua` / `aliyun` | `auto` |
 | `KIMODO_PROXY` | HTTP(S) 代理 | 空 |
-| `KIMODO_GIT_URL` | kimodo git 源**或本地目录**（须含 MPS 后端） | `https://github.com/atticus-lv/kimodo.git` |
+| `KIMODO_GIT_URL` | kimodo git 源**或本地目录**（须含 MPS 后端） | `https://github.com/tim-mcdonald/kimodo.git` |
 | `KIMODO_HF_HOME` | 模型缓存位置（覆盖默认的 venv 旁） | `<venv 父目录>/hf-cache` |
 | `KIMODO_DEVICE` | `auto` / `mps` / `cpu` / `cuda` | `auto`（Mac→MPS） |
 
@@ -91,7 +91,7 @@ brew install cmake simde pybind11 eigen
 
 KIMODO_VENV="$HOME/KimodoMotionRuntime/venv"  # 或替换为插件偏好里的实际 venv 路径
 "$KIMODO_VENV/bin/python" -m pip install --force-reinstall --no-deps \
-  "kimodo @ git+https://github.com/atticus-lv/kimodo.git"
+  "kimodo @ git+https://github.com/tim-mcdonald/kimodo.git"
 
 "$KIMODO_VENV/bin/python" -c "import motion_correction; from motion_correction import motion_postprocess; print('motion_correction OK')"
 ```
@@ -207,7 +207,7 @@ source ~/.kimodo_venv/bin/activate            # Windows: .\.kimodo_venv\Scripts\
 pip install torch torchvision torchaudio      # Windows: --index-url https://download.pytorch.org/whl/cu128
 
 # 3. kimodo（MPS fork；默认跳过可选 motion_correction 后处理扩展）
-SKIP_MOTION_CORRECTION_IN_SETUP=1 pip install "kimodo @ git+https://github.com/atticus-lv/kimodo.git"
+SKIP_MOTION_CORRECTION_IN_SETUP=1 pip install "kimodo @ git+https://github.com/tim-mcdonald/kimodo.git"
 
 # 4. 服务器依赖
 pip install fastapi "uvicorn[standard]" pydantic scipy bvhio requests

@@ -46,7 +46,7 @@ Linux x64/CUDA 复用同一套服务器与 Blender 内 retarget 链路，但目�
    - Linux x64/CUDA：暂时没有一键安装器，请按 `INSTALL.md` / `INSTALL_EN.md` 的手工安装步骤配置。
 3. 把插件偏好里的 **venv 路径**设为运行时实际安装的位置。
 
-运行时默认安装 **[atticus-lv/kimodo](https://github.com/atticus-lv/kimodo)**，这是本插件使用的
+运行时默认安装 **[tim-mcdonald/kimodo](https://github.com/tim-mcdonald/kimodo)**（atticus-lv/kimodo 的 fork），这是本插件使用的
 Kimodo fork，包含 MPS/macOS 与后处理兼容相关改动。文本编码器需要 **Meta-Llama-3-8B-Instruct**
 （约 16 GB，Meta 门控）；也支持非门控镜像。完整步骤、参数与模型设置见
 **[INSTALL.md](./INSTALL.md)**（中文）/ **[INSTALL_EN.md](./INSTALL_EN.md)**（英文）。

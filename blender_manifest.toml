@@ -7,7 +7,7 @@ tagline = "NVIDIA Kimodo AI text-to-motion, retargeted to your rig"
 maintainer = "Xingxun, Atticus"
 type = "add-on"
 
-website = "https://github.com/atticus-lv/kimodo_motion"
+website = "https://github.com/tim-mcdonald/kimodo_motion"
 
 tags = ["Animation", "Rigging", "Pipeline"]
 
